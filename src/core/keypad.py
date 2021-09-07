@@ -1,40 +1,51 @@
-from machine import Timer
+import time
 
 from libs.adafruit_matrixkeypad import Matrix_Keypad
+from .logger import l
 
 
 class Keypad(Matrix_Keypad):
-    _register_key = False
-    _long_press = False
-    _key_down = False
-    _key_up = False
+    _tick_down = None
+    _tick_up = None
+    _pk = None
+    _sent = False
 
     def __init__(self, *args, **kwargs):
+        self._lng_delay = kwargs.get('long_press_delay') or 250  # ms
         super().__init__(*args, **kwargs)
-        self._tm_short = Timer()
-        self._tm_long = Timer()
 
     @property
     def pressed_key(self):
         pressed_key = (self.pressed_keys or [None])[0]
 
-        if pressed_key:
-            self._key_down = True
-            self._register_key = False
-            self._long_press = False
-            self._tm_short.init(period=10, mode=Timer.ONE_SHOT, callback=self._on_short_tm)
-            self._tm_long.init(period=250, mode=Timer.ONE_SHOT, callback=self._on_long_tm)
+        if not pressed_key and self._tick_down and not self._tick_up:
+            self._tick_up = time.ticks_ms()
 
-        while self._key_down and pressed_key:
-            self._key_down = len(self.pressed_keys) > 0
+        if pressed_key and not self._tick_down:
+            self._pk = pressed_key
+            self._tick_down = time.ticks_ms()
 
-        if not self._register_key:
-            pressed_key = None
+        if self._tick_down:
+            diff = time.ticks_diff(time.ticks_ms(), self._tick_down)
+            if diff == 10:
+                self._sent = False
+                l.debug('Key down:', self._pk)
+            if diff == self._lng_delay:
+                l.debug('Key longpress:', self._pk)
+                self._sent = True
+                time.sleep_ms(10)  # otherwise freezes for some reason
+                return self._pk, True
 
-        return pressed_key, self._long_press
+        if self._tick_up:
+            diff = time.ticks_diff(time.ticks_ms(), self._tick_up)
+            if diff == 10:
+                l.debug('Key up:', self._pk)
 
-    def _on_short_tm(self, *args):
-        self._register_key = True
+                self._tick_up = None
+                self._tick_down = None
 
-    def _on_long_tm(self, *args):
-        self._long_press = True
+                if not self._sent:
+                    time.sleep_ms(10)  # otherwise freezes for some reason
+                    return self._pk, False
+
+        return None, False
