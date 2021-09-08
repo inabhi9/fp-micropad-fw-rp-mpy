@@ -12,3 +12,5 @@ keypad_keymap = [('1', '2', '3', 'A'),
 
 hid_macro_short_modifier = 'CTRL'
 hid_macro_long_modifier = 'ALT-CTRL'
+
+default_password = '123456'
