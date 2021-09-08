@@ -12,8 +12,9 @@ class KeypadHID:
     _tm = Timer()
     _running = False
 
-    def __init__(self):
+    def __init__(self, db):
         self._mode = self.MACRO
+        self._db = db
 
         cols = [Pin(x) for x in config.keypad_cols]
         rows = [Pin(x) for x in config.keypad_rows]
@@ -22,8 +23,8 @@ class KeypadHID:
         self._tm = Timer()
 
     def start(self):
-        # no need to run in full speed
-        self._tm.init(period=5, callback=self._main)
+        # value other than this won't work as it's related to Keypad lib
+        self._tm.init(period=10, callback=self._main)
 
     def stop(self):
         if not self._running:
