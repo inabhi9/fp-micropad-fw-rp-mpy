@@ -53,12 +53,11 @@ class DB:
 
     def set(self, index: str, passwd: str, **kwargs):
         filename = self._get_filename(index)
-        data = kwargs.copy()
 
-        data['passwd'] = self._encrypt(passwd)
+        kwargs['passwd'] = self._encrypt(passwd)
 
         f = open(filename, 'w')
-        json.dump(data, f)
+        json.dump(kwargs, f)
 
         f.close()
 
