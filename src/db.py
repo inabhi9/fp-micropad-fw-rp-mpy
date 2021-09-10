@@ -56,10 +56,8 @@ class DB:
 
         kwargs['passwd'] = self._encrypt(passwd)
 
-        f = open(filename, 'w')
-        json.dump(kwargs, f)
-
-        f.close()
+        with open(filename, 'w') as f:
+            json.dump(kwargs, f)
 
     def get(self, index: str):
         filename = self._get_filename(index)
@@ -110,7 +108,7 @@ class DB:
 
     def _file_exists(self, filename):
         try:
-            f = open(filename, 'r+b')
+            f = open(filename, 'r')
             f.close()
             return True
         except OSError:
