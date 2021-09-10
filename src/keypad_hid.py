@@ -1,19 +1,16 @@
 import hid
 from machine import Pin, Timer
+import uasyncio
 
 import config
-from core import Keypad, l
+from core import Keypad, l, state
 
 
 class KeypadHID:
-    AUTH = 0
-    MACRO = 1
-
     _tm = Timer()
     _running = False
 
     def __init__(self, db):
-        self._mode = self.MACRO
         self._db = db
 
         cols = [Pin(x) for x in config.keypad_cols]
@@ -22,9 +19,10 @@ class KeypadHID:
         self._keypad = Keypad(rows, cols, config.keypad_keymap)
         self._tm = Timer()
 
-    def start(self):
-        # value other than this won't work as it's related to Keypad lib
-        self._tm.init(period=10, callback=self._main)
+    async def task(self):
+        while True:
+            await uasyncio.sleep_ms(1)
+            self._main()
 
     def stop(self):
         if not self._running:
@@ -38,13 +36,19 @@ class KeypadHID:
         if not key:
             return
 
-        if self._mode == self.MACRO:
+        if not state.FP_VERIFIED:
             if long_press:
                 hid.Send(config.hid_macro_long_modifier, key)
             else:
                 hid.Send(config.hid_macro_short_modifier, key)
         else:
-            raise NotImplementedError
+            self._send_pwd(key)
+            state.FP_VERIFIED = False
 
-    def set_mode(self, mode):
-        self._mode = mode
+    def _send_pwd(self, key):
+        pwd = self._db.get(key)
+
+        if pwd:
+            hid.Send(pwd['passwd'], 'ENTER' if pwd.get('enter', True) else '')
+        else:
+            l.warn('No password found for %s' % key)
