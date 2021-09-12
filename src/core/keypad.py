@@ -9,6 +9,7 @@ class Keypad(Matrix_Keypad):
     _tick_up = None
     _pk = None
     _sent = False
+    _key_down = False
 
     def __init__(self, *args, **kwargs):
         self._lng_delay = kwargs.get('long_press_delay') or 250  # ms
@@ -30,10 +31,11 @@ class Keypad(Matrix_Keypad):
 
         if self._tick_down:
             diff = time.ticks_diff(time.ticks_ms(), self._tick_down)
-            if diff == 10:
+            if diff > 10 and not self._key_down:
                 self._sent = False
+                self._key_down = True
                 l.debug('Key down:', self._pk)
-            if diff == self._lng_delay:
+            if diff > self._lng_delay and not self._sent:
                 l.debug('Key longpress:', self._pk)
                 self._sent = True
                 return self._pk, True
@@ -45,6 +47,7 @@ class Keypad(Matrix_Keypad):
 
                 self._tick_up = None
                 self._tick_down = None
+                self._key_down = False
 
                 if not self._sent:
                     return self._pk, False
