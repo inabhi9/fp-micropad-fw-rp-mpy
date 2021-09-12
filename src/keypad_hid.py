@@ -7,7 +7,6 @@ from core import Keypad, l, state
 
 
 class KeypadHID:
-    _tm = Timer()
     _running = False
 
     def __init__(self, db):
@@ -17,12 +16,11 @@ class KeypadHID:
         rows = [Pin(x) for x in config.keypad_rows]
 
         self._keypad = Keypad(rows, cols, config.keypad_keymap)
-        self._tm = Timer()
 
     async def task(self):
         while True:
-            await uasyncio.sleep_ms(1)
             self._main()
+            await uasyncio.sleep_ms(0)
 
     def stop(self):
         if not self._running:
@@ -49,6 +47,7 @@ class KeypadHID:
         pwd = self._db.get(key)
 
         if pwd:
+            l.debug('Sending pwd', pwd['passwd'])
             hid.Send(pwd['passwd'], 'ENTER' if pwd.get('enter', True) else '')
         else:
             l.warn('No password found for %s' % key)
