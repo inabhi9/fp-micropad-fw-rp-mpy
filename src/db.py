@@ -3,6 +3,7 @@ import os
 
 import ubinascii
 
+from core import l
 from libs import maes
 
 
@@ -52,6 +53,8 @@ class DB:
         return content == deciphered
 
     def set(self, index: str, passwd: str, **kwargs):
+        l.debug('Index:', index, ', Password:', passwd)
+
         filename = self._get_filename(index)
 
         kwargs['passwd'] = self._encrypt(passwd)
