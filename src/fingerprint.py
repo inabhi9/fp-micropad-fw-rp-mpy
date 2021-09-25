@@ -1,3 +1,5 @@
+import time
+
 import uasyncio
 from machine import UART, Pin
 
@@ -8,31 +10,46 @@ from libs import adafruit_fingerprint
 
 
 class Fingerprint:
+    # required to boot FP
+    _delay_after_fp_on = 30  # ms
+
     def __init__(self):
         uart = UART(
-            config.fp_uart_id,
-            config.fp_baud_rate,
-            tx=Pin(config.fp_tx_pin),
-            rx=Pin(config.fp_rx_pin),
+            config.FP_UART_ID,
+            config.FP_BAUD_RATE,
+            tx=Pin(config.FP_TX_PIN),
+            rx=Pin(config.FP_RX_PIN),
             timeout=100,
             rxbuf=10240
         )
-        self._finger = FingerprintEx(uart, passwd=[0x00, 0x03, 0xA5, 0x37])
-        self._irq_pin = Pin(config.fp_touch_irq_pin, Pin.IN, pull=Pin.PULL_UP)
+
+        self._tbase = Pin(config.FP_TBASE, Pin.OUT)
+        self._tbase.low()
+        time.sleep(self._delay_after_fp_on / 1000)
+
+        self._finger = FingerprintEx(uart)
+        self._tbase.high()
+
+        self._irq_pin = Pin(config.FP_IRQ_PIN, Pin.IN, pull=Pin.PULL_UP)
 
         l.info('FP initialized')
 
     async def task(self):
-        while True:
-            await uasyncio.sleep_ms(0)
-            finger_irq = not self._irq_pin.value()
-            if not finger_irq:
-                continue
+        uasyncio.create_task(self._sample_irq_val())
 
-            state.FP_VERIFIED = await self.get_fingerprint()
-            if state.FP_VERIFIED:
-                await uasyncio.sleep(3)
-                state.FP_VERIFIED = False
+        while True:
+            await uasyncio.sleep_ms(1)
+
+            if self.finger_irq:
+                await self._set_fp_power(True)
+
+                state.FP_VERIFIED = await self.get_fingerprint()
+                if state.FP_VERIFIED:
+                    await self._set_fp_power(False)
+                    await uasyncio.sleep(config.FP_AUTH_KP_INPUT_TIMEOUT)
+                    state.FP_VERIFIED = False
+            else:
+                await self._set_fp_power(False)
 
     async def get_fingerprint(self):
         """Get a finger print image, template it, and see if it matches!"""
@@ -55,3 +72,35 @@ class Fingerprint:
         l.debug('FP', "Found")
 
         return True
+
+    finger_irq = 0
+
+    async def _sample_irq_val(self):
+        """
+        Task to sample value to eliminate the noise.
+        """
+        while True:
+            await uasyncio.sleep_ms(0)
+            val = self._irq_pin.value()
+
+            if self.finger_irq and not val:
+                # 1 second to eliminate noise + 2 seconds to allow
+                # FP to sense touch if it's about to timeout
+                await uasyncio.sleep(3)
+                val = self._irq_pin.value()
+
+            self.finger_irq = val
+
+    __fp_power_state = False
+
+    async def _set_fp_power(self, mode: bool):
+        # Prevent writing again if already in the state
+        if mode and not self.__fp_power_state:
+            self.__fp_power_state = True
+            self._tbase.low()
+            await uasyncio.sleep_ms(self._delay_after_fp_on)
+            # For some weird reason, when powering on, it has to be flushed
+            self._finger._uart_flush()
+        elif not mode and self.__fp_power_state:
+            self._tbase.high()
+            self.__fp_power_state = False
