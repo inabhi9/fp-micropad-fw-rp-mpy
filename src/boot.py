@@ -1,5 +1,6 @@
 import hid
 import machine
+from machine import Pin
 
 import config
 from db import DB
@@ -14,3 +15,5 @@ machine.freq(240000000)
 db = DB()
 if not db.is_initialized:
     db.init(config.default_password)
+
+Pin(config.VIBRATOR_PIN, mode=Pin.OUT).high()
