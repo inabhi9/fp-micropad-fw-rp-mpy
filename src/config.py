@@ -1,3 +1,5 @@
+from machine import const
+
 # Keypad config
 
 keypad_cols = (0, 1, 2, 3)
@@ -20,3 +22,6 @@ fp_uart_id = 1
 fp_tx_pin = 8
 fp_rx_pin = 9
 fp_baud_rate = 57600
+
+VIBRATOR_PIN = const(16)
+LED_RGB_PINS = const([21, 19, 18])
