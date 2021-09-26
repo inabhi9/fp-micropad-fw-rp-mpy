@@ -43,7 +43,13 @@ class Fingerprint:
             if self.finger_irq:
                 await self._set_fp_power(True)
 
-                state.FP_VERIFIED = await self.get_fingerprint()
+                try:
+                    state.FP_VERIFIED = await self.get_fingerprint()
+                except RuntimeError as e:
+                    l.warn('Error while getting fingerprint: %s', e)
+                    state.FP_VERIFIED = False
+                    continue
+
                 if state.FP_VERIFIED:
                     await self._set_fp_power(False)
                     await uasyncio.sleep(config.FP_AUTH_KP_INPUT_TIMEOUT)
