@@ -18,6 +18,11 @@ class FingerprintEx(Adafruit_Fingerprint):
         while self._uart.any():
             self._uart.read(self._uart.any())
 
+    def _send_packet(self, data):
+        # For some weird reason, occasionally some random bytes appear
+        self._uart_flush()
+        super(FingerprintEx, self)._send_packet(data)
+
     def _get_packet(self, expected):
         start = time.ticks_ms()
         while self._uart.any() < expected:

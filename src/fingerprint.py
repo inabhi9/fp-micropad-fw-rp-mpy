@@ -99,8 +99,6 @@ class Fingerprint:
             self.__fp_power_state = True
             self._tbase.low()
             await uasyncio.sleep_ms(self._delay_after_fp_on)
-            # For some weird reason, when powering on, it has to be flushed
-            self._finger._uart_flush()
         elif not mode and self.__fp_power_state:
             self._tbase.high()
             self.__fp_power_state = False
