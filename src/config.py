@@ -7,8 +7,8 @@ keypad_rows = (4, 5, 7, 6)
 
 keypad_keymap = [('1', '2', '3', 'A'),
                  ('4', '5', '6', 'B'),
-                 ('7', '8', '9', 'C'),
-                 ('*', '0', '#', 'D')]
+                 ('*', '0', '#', 'D'),
+                 ('7', '8', '9', 'C')]
 
 # HID Macro config
 
@@ -25,6 +25,6 @@ FP_BAUD_RATE = const(57600)
 FP_TBASE = const(15)  # Transistor Base
 
 VIBRATOR_PIN = const(16)
-LED_RGB_PINS = 21, 19, 18
+LED_RGB_PINS = 21, 20, 19
 
 FP_AUTH_KP_INPUT_TIMEOUT = const(3)  # seconds
