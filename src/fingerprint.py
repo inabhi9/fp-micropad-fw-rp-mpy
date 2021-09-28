@@ -46,6 +46,8 @@ class Fingerprint:
                 try:
                     state.FP_VERIFIED = await self.get_fingerprint()
                 except RuntimeError as e:
+                    # there might be some random bytes
+                    self._finger._uart_flush()
                     l.warn('Error while getting fingerprint: %s', e)
                     state.FP_VERIFIED = False
                     continue
@@ -105,6 +107,8 @@ class Fingerprint:
             self.__fp_power_state = True
             self._tbase.low()
             await uasyncio.sleep_ms(self._delay_after_fp_on)
+            # For some weird reason, occasionally some random bytes appear
+            self._finger._uart_flush()
         elif not mode and self.__fp_power_state:
             self._tbase.high()
             self.__fp_power_state = False
