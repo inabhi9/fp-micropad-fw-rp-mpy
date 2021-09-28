@@ -60,6 +60,8 @@ class Fingerprint:
                     await self._set_fp_power(False)
                     await uasyncio.sleep(config.FP_AUTH_KP_INPUT_TIMEOUT)
                     state.FP_VERIFIED = False
+                else:
+                    await uasyncio.sleep_ms(100)
             else:
                 await self._set_fp_power(False)
 
