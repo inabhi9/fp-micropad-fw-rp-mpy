@@ -17,6 +17,8 @@ hid_macro_long_modifier = 'ALT-CTRL'
 
 default_password = '123456'
 
+DELAY_AFTER_INVALID_BOOT_AUTH = const(3)  # seconds
+
 FP_IRQ_PIN = const(11)
 FP_UART_ID = const(1)
 FP_TX_PIN = const(8)
@@ -28,3 +30,6 @@ VIBRATOR_PIN = const(16)
 LED_RGB_PINS = 21, 20, 19
 
 FP_AUTH_KP_INPUT_TIMEOUT = const(3)  # seconds
+
+HAPTIC_FEEDBACK = True
+VISUAL_FEEDBACK = True
