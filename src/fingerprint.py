@@ -1,3 +1,4 @@
+import gc
 import time
 
 import uasyncio
@@ -52,6 +53,7 @@ class Fingerprint:
                     self._finger._uart_flush()
                     l.warn('Error while getting fingerprint: %s', e)
                     state.FP_VERIFIED = False
+                    gc.collect()
                     continue
 
                 if state.FP_VERIFIED:
