@@ -1,5 +1,6 @@
 import uasyncio
 
+import config
 from cmd import CMD
 from core import l, state
 from db import DB
@@ -33,7 +34,7 @@ async def auth_on_start():
                 l.serial_err('fp-auth', 'invalid')
                 the_password = ''
                 state.BOOT_AUTH_INVALID = True
-                await uasyncio.sleep(3)
+                await uasyncio.sleep(config.DELAY_AFTER_INVALID_BOOT_AUTH)
                 state.BOOT_AUTH_INVALID = False
         elif key == 'C':
             the_password = ''
