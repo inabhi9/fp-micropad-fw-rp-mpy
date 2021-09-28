@@ -1,9 +1,9 @@
 import hid
-from machine import Pin, Timer
 import uasyncio
+from machine import Pin
 
 import config
-from core import Keypad, l, state
+from core import Keypad, l, state, events
 
 
 class KeypadHID:
@@ -19,7 +19,7 @@ class KeypadHID:
 
     async def task(self):
         while True:
-            self._main()
+            await self._main()
             await uasyncio.sleep_ms(0)
 
     def stop(self):
@@ -28,11 +28,13 @@ class KeypadHID:
 
         self._running = False
 
-    def _main(self, *args):
+    async def _main(self, *args):
         key, long_press = self._keypad.pressed_key
 
         if not key:
             return
+
+        uasyncio.create_task(events.keypress.send(long_press=long_press))
 
         if not state.FP_VERIFIED:
             if long_press:
