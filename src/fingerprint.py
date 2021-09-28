@@ -45,7 +45,9 @@ class Fingerprint:
 
                 try:
                     state.FP_VERIFIED = await self.get_fingerprint()
-                except RuntimeError as e:
+                except (RuntimeError, ValueError) as e:
+                    # For some reason sometimes it happens, buffer falls short
+                    # and throws value error
                     # there might be some random bytes
                     self._finger._uart_flush()
                     l.warn('Error while getting fingerprint: %s', e)
