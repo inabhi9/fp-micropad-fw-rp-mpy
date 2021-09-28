@@ -9,7 +9,7 @@ from db import DB
 hid.SetKeyCode(0x1E, '!@#$%^&*()', hid.MOD_LSHIFT)
 
 # Why not!
-machine.freq(240000000)
+machine.freq(200000000)
 
 # It's needed to make it easier
 db = DB()
