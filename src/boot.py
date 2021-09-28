@@ -17,3 +17,5 @@ if not db.is_initialized:
     db.init(config.default_password)
 
 Pin(config.VIBRATOR_PIN, mode=Pin.OUT).high()
+
+Pin(25, mode=Pin.OUT).high()
