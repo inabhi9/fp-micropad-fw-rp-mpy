@@ -19,3 +19,7 @@ if not db.is_initialized:
 Pin(config.VIBRATOR_PIN, mode=Pin.OUT).high()
 
 Pin(25, mode=Pin.OUT).high()
+
+# to reduce noise
+unused_pins = [28, 27, 26, 22, 18, 17, 14, 10, 12, 13, 14]
+[Pin(pin, mode=Pin.IN, pull=Pin.PULL_UP) for pin in unused_pins]
