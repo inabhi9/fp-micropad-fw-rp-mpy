@@ -1,5 +1,4 @@
 import gc
-import time
 
 import uasyncio
 from machine import UART, Pin
@@ -11,9 +10,6 @@ from libs import adafruit_fingerprint
 
 
 class Fingerprint:
-    # required to boot FP
-    _delay_after_fp_on = 30  # ms
-
     def __init__(self):
         uart = UART(
             config.FP_UART_ID,
@@ -26,7 +22,6 @@ class Fingerprint:
 
         self._tbase = Pin(config.FP_TBASE, Pin.OUT)
         self._tbase.low()
-        time.sleep(self._delay_after_fp_on / 1000)
 
         self._finger = FingerprintEx(uart)
         self._tbase.high()
@@ -60,8 +55,6 @@ class Fingerprint:
                     await self._set_fp_power(False)
                     await uasyncio.sleep(config.FP_AUTH_KP_INPUT_TIMEOUT)
                     state.FP_VERIFIED = False
-                else:
-                    await uasyncio.sleep_ms(100)
             else:
                 await self._set_fp_power(False)
 
@@ -94,7 +87,7 @@ class Fingerprint:
         Task to sample value to eliminate the noise.
         """
         while True:
-            await uasyncio.sleep_ms(0)
+            await uasyncio.sleep_ms(10)
             val = self._irq_pin.value()
 
             if self.finger_irq and not val:
@@ -110,11 +103,9 @@ class Fingerprint:
     async def _set_fp_power(self, mode: bool):
         # Prevent writing again if already in the state
         if mode and not self.__fp_power_state:
-            self.__fp_power_state = True
             self._tbase.low()
-            await uasyncio.sleep_ms(self._delay_after_fp_on)
-            # For some weird reason, occasionally some random bytes appear
-            self._finger._uart_flush()
+            self.__fp_power_state = True
+            await self._finger._uart_flush()
         elif not mode and self.__fp_power_state:
             self._tbase.high()
             self.__fp_power_state = False
