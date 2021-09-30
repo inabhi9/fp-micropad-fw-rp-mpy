@@ -105,7 +105,7 @@ class Fingerprint:
         if mode and not self.__fp_power_state:
             self._tbase.low()
             self.__fp_power_state = True
-            await self._finger._uart_flush()
+            self._finger._uart_flush()
         elif not mode and self.__fp_power_state:
             self._tbase.high()
             self.__fp_power_state = False
