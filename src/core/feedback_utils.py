@@ -51,8 +51,8 @@ async def pwm(pin, freq=50, peak=256, delay_cycle=1, break_on=lambda: False):
         pwm_.duty_u16(duty * duty)
 
         if break_on() is True:
-            pwm_.duty_u16(0)
             pwm_.deinit()
+            led_off(pin)
             break
 
         await uasyncio.sleep_ms(delay_cycle)
