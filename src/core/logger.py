@@ -1,3 +1,6 @@
+import time
+
+
 class Logger:
     DEBUG = 0
     INFO = 1
@@ -9,19 +12,19 @@ class Logger:
 
     def info(self, *msg):
         if self.level <= self.INFO:
-            self.print('info:', *msg)
+            self.print_with_time('info:', *msg)
 
     def warn(self, *msg):
         if self.level <= self.WARN:
-            self.print('warn:', *msg)
+            self.print_with_time('warn:', *msg)
 
     def debug(self, *msg):
         if self.level <= self.DEBUG:
-            self.print('debug:', *msg)
+            self.print_with_time('debug:', *msg)
 
     def error(self, *msg):
         if self.level <= self.ERROR:
-            self.print('err:', *msg)
+            self.print_with_time('err:', *msg)
 
     def serial_info(self, event, status='', **kwargs):
         self._serial_print('info', event, status=status, **kwargs)
@@ -42,6 +45,9 @@ class Logger:
 
     def print(self, *msgs):
         print(*msgs)
+
+    def print_with_time(self, *msgs):
+        print(time.time(), *msgs)
 
 
 l = Logger(Logger.DEBUG)
