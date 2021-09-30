@@ -1,7 +1,7 @@
 import time
 
-from .logger import l
 from libs.adafruit_fingerprint import Adafruit_Fingerprint
+from .logger import l
 
 
 class FingerprintEx(Adafruit_Fingerprint):
@@ -15,8 +15,8 @@ class FingerprintEx(Adafruit_Fingerprint):
     def _uart_flush(self):
         l.debug('Flushing UART')
 
-        while self._uart.any():
-            self._uart.read(self._uart.any())
+        if self._uart.any():
+            self._uart.read()
 
     def _send_packet(self, data):
         super(FingerprintEx, self)._send_packet(data)
